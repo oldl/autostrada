@@ -1,0 +1,16 @@
+{
+  "name": "autostrada",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "python3 -m http.server 4173 --bind 127.0.0.1 --directory dist",
+    "check": "node --check dist/app.js && node --check dist/scene/TunnelScene.js && node --check dist/audio/AudioEngine.js && npm test",
+    "test": "node --test audio.test.mjs scene.test.mjs",
+    "vendor": "cp node_modules/tone/build/Tone.js dist/vendor/tone.js && cp node_modules/three/build/three.module.js node_modules/three/build/three.core.js dist/vendor/"
+  },
+  "dependencies": {
+    "three": "^0.187.0",
+    "tone": "^15.1.22"
+  },
+  "type": "module"
+}

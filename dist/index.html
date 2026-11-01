@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#cc2025"><title>AUTOSTRADA® — An experiment in pasta</title><link rel="stylesheet" href="style.css"></head>
+<body>
+<section id="audio-entry" aria-labelledby="entry-title">
+  <div class="entry-index">AN EXPERIMENT IN PASTA / VOL. 001</div>
+  <h1 id="entry-title">AUTOSTRADA<sup>®</sup></h1>
+  <p>AN ENDLESS JOURNEY THROUGH PASTA</p>
+  <div class="entry-options"><button id="enter-sound">ENTER WITH SOUND ↗</button><button id="enter-silent">ENTER WITHOUT SOUND →</button></div>
+  <small>HEADPHONES RECOMMENDED</small>
+</section>
+<div id="experience" inert>
+<canvas id="tunnel" aria-label="An immersive three-dimensional sculpture of cylindrical golden spaghetti"></canvas><div class="shade"></div>
+<header><a class="brand" href="./" aria-label="Autostrada home">AUTOSTRADA<sup>®</sup></a><div class="edition">AN EXPERIMENT IN PASTA<br><span>MILANO — VIRTUAL / VOL. 001</span></div><button id="sound" aria-pressed="false">SOUND OFF ↘</button></header>
+<main><div class="intro"><span class="eyebrow"><i></i> LIFE IS SHORT. PASTA IS LONG.</span><h1>Endless<br>Spaghetti</h1><p>An infinite spaghetti highway.<br>No exits. No regrets. Just carbs.</p></div><div class="coordinate" aria-hidden="true">45°27′51.4″N<br>09°11′25.1″E</div><div class="center-mark" aria-hidden="true">+</div><div class="vertical" aria-hidden="true">PASTA, IN ANOTHER DIMENSION.</div><div id="fallback" hidden>The tunnel needs WebGL to come to life.<br>Try opening this page in a browser with graphics acceleration.</div></main>
+<footer><div class="journey"><div><div class="distance"><span id="distance">000.00</span><span class="unit">M</span></div><span class="eyebrow muted">DISTANCE TRAVELLED</span></div><div class="plate-counter"><canvas id="plate" aria-hidden="true"></canvas><div><div class="plate-count"><span id="plates">000</span></div><span class="eyebrow muted">PLATES SERVED</span></div></div></div><div class="controls"><div class="buttons"><button id="pause" aria-pressed="false">Ⅱ PAUSE</button><button id="help" aria-expanded="false" aria-controls="instructions" aria-label="Show controls">?</button></div><span class="hint">SCROLL TO CHANGE SPEED <span>↓</span></span></div></footer>
+<div id="instructions" hidden><strong>Take the scenic route.</strong><p>Always in motion. Scroll down to accelerate, up to slow down. Click to amplify the ripples and twist the ribbons; move or drag to shift the vanishing point.</p><p>↑ / ↓ Speed &nbsp; Space Pause &nbsp; M Sound</p><small>Prefer stillness? Pause freezes the sculpture.</small></div></div><p id="audio-status" role="status" aria-live="polite"></p><script src="vendor/tone.js"></script><script type="module" src="app.js"></script></body></html>

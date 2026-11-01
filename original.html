@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+
+<html class="h-full w-full bg-[#D71920] overflow-hidden select-none" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>AUTOSTRADA® — The Infinite Pasta Tunnel</title>
+<!-- Tailwind CSS v3 CDN with plugins -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Configuration for Custom Palette -->
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'pasta-red': '#D71920',
+            'pasta-burgundy': '#8F1018',
+            'pasta-yellow': '#FFD447',
+            'pasta-gold': '#E9AC27',
+            'pasta-cream': '#FFF5E6',
+          },
+          fontFamily: {
+            sans: ['"Helvetica Neue"', 'Helvetica', 'Arial', 'system-ui', 'sans-serif'],
+            mono: ['"SF Mono"', 'Menlo', 'Monaco', '"Courier New"', 'monospace']
+          },
+          letterSpacing: {
+            'widest-plus': '0.28em',
+            'ultra-wide': '0.35em'
+          }
+        }
+      }
+    }
+  </script>
+<!-- Custom CSS for Typography & Animation -->
+<style data-purpose="typography">
+    .font-condensed {
+      font-stretch: 110%;
+      letter-spacing: -0.035em;
+    }
+    .hud-tabular {
+      font-variant-numeric: tabular-nums;
+    }
+  </style>
+<style data-purpose="crosshairs">
+    .crosshair-line {
+      pointer-events: none;
+      transition: transform 0.12s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    @keyframes pulse-subtle {
+      0%, 100% { opacity: 0.25; transform: scaleY(1); }
+      50% { opacity: 0.9; transform: scaleY(1.35); }
+    }
+    .indicator-pulse {
+      animation: pulse-subtle 2.2s infinite ease-in-out;
+    }
+  </style>
+</head>
+<body class="relative h-full w-full bg-[#D71920] text-[#FFF5E6] overflow-hidden font-sans antialiased cursor-crosshair">
+<!-- BEGIN: WebGLCanvasTunnel -->
+<!-- Direct WebGL implementation running the requested OP-ART GLSL shader -->
+<canvas class="absolute inset-0 w-full h-full block z-0" data-purpose="pasta-tunnel-renderer" id="gl-canvas"></canvas>
+<!-- END: WebGLCanvasTunnel -->
+<!-- BEGIN: MinimalistHUDCrosshair -->
+<!-- Subtle center viewfinder inspired by Italian optical precision engineering -->
+<div class="absolute inset-0 pointer-events-none z-10 flex items-center justify-center transition-transform duration-75 ease-out" data-purpose="optical-centerpiece" id="crosshair-wrapper">
+<!-- Center coordinate marker -->
+<div class="relative w-16 h-16 opacity-35 flex items-center justify-center">
+<div class="absolute w-full h-[1px] bg-[#FFF5E6]"></div>
+<div class="absolute h-full w-[1px] bg-[#FFF5E6]"></div>
+<div class="w-2.5 h-2.5 border border-[#FFF5E6] rounded-full"></div>
+</div>
+</div>
+<!-- END: MinimalistHUDCrosshair -->
+<!-- BEGIN: EditorialInterfaceOverlay -->
+<div class="relative z-20 w-full h-full flex flex-col justify-between p-6 sm:p-10 md:p-12 pointer-events-none" data-purpose="editorial-overlay">
+<!-- BEGIN: TopBar -->
+<header class="flex justify-between items-start gap-4">
+<!-- Top Left: Master Identity -->
+<div class="flex flex-col items-start" data-purpose="brand-mark">
+<h1 class="text-4xl sm:text-6xl md:text-7xl font-extrabold tracking-tighter text-[#FFF5E6] leading-none select-none font-condensed">
+          AUTOSTRADA<span class="text-xs sm:text-sm font-bold align-top ml-1 tracking-normal font-mono text-[#FFD447]">®</span>
+</h1>
+<div class="flex items-center gap-2.5 mt-2.5">
+<span class="w-1.5 h-1.5 rounded-full bg-[#FFD447] inline-block animate-ping"></span>
+<p class="text-[10px] sm:text-xs font-mono uppercase tracking-widest-plus text-[#FFD447]/90 font-medium">
+            AN EXPERIMENTAL OP-ART SCULPTURE
+          </p>
+</div>
+</div>
+<!-- Top Right: Curatorial Meta & Sound Toggle -->
+<div class="flex flex-col items-end text-right space-y-3" data-purpose="curatorial-index">
+<div class="text-[10px] sm:text-xs font-mono uppercase tracking-widest leading-relaxed text-[#FFF5E6]/85">
+<p class="text-[#FFD447] font-semibold">AN EXPERIMENT IN PASTA</p>
+<p class="opacity-75">EST. 2026 / MILANO — VIRTUAL</p>
+</div>
+<!-- Audio Interactive Toggle Button -->
+<button class="pointer-events-auto flex items-center gap-2 border border-[#FFF5E6]/25 hover:border-[#FFD447] px-2.5 py-1 rounded-full text-[9px] font-mono tracking-widest text-[#FFF5E6] transition-colors uppercase bg-[#8F1018]/30 backdrop-blur-sm" data-purpose="audio-drone-toggle" id="sound-toggle" type="button">
+<span class="flex items-end gap-[2px] h-2.5" id="sound-bars">
+<span class="w-[2px] h-1.5 bg-[#FFF5E6]"></span>
+<span class="w-[2px] h-3 bg-[#FFF5E6]"></span>
+<span class="w-[2px] h-2 bg-[#FFF5E6]"></span>
+</span>
+<span class="tabular-nums" id="sound-label">SOUND [MUTED]</span>
+</button>
+</div>
+</header>
+<!-- END: TopBar -->
+<!-- BEGIN: MiddleHUDTelemetrics -->
+<!-- Mid-screen discrete live optical measurements -->
+<div class="hidden sm:flex justify-between items-center text-[10px] font-mono tracking-ultra-wide text-[#FFF5E6]/60 pointer-events-none" data-purpose="flight-telemetry">
+<div class="flex flex-col gap-1 border-l border-[#FFF5E6]/20 pl-3">
+<span class="text-[#FFD447] opacity-80">CURVATURE</span>
+<span class="hud-tabular text-xs text-[#FFF5E6]" id="curvature-readout">R: 12.44 RAD/S</span>
+</div>
+<div class="flex flex-col items-center gap-1">
+<span class="text-[#FFD447] opacity-80">TOROID STRAND FLUX</span>
+<span class="hud-tabular text-xs text-[#FFF5E6]" id="flux-readout">72 HARMONICS</span>
+</div>
+<div class="flex flex-col items-end gap-1 border-r border-[#FFF5E6]/20 pr-3 text-right">
+<span class="text-[#FFD447] opacity-80">VELOCITY</span>
+<span class="hud-tabular text-xs text-[#FFF5E6]" id="velocity-readout">0.75 C</span>
+</div>
+</div>
+<!-- END: MiddleHUDTelemetrics -->
+<!-- BEGIN: BottomBar -->
+<footer class="flex justify-between items-end gap-6 pt-4 border-t border-[#FFF5E6]/15">
+<!-- Bottom Left: Odometer and Phase status -->
+<div class="flex flex-col gap-3" data-purpose="travel-telemetry">
+<div class="flex flex-col">
+<!-- Dynamic high-impact Odometer Readout -->
+<div class="flex items-baseline gap-2">
+<span class="text-3xl sm:text-5xl md:text-6xl font-black tracking-tight font-mono hud-tabular text-[#FFF5E6] drop-shadow-sm" id="odometer">
+              042.85
+            </span>
+<span class="text-sm sm:text-lg font-mono font-bold text-[#FFD447] tracking-wider">KM</span>
+</div>
+<span class="text-[9px] sm:text-[10px] font-mono uppercase tracking-widest-plus text-[#FFF5E6]/70 mt-0.5">
+            DISTANCE TRAVELLED
+          </span>
+</div>
+<!-- Dynamic Phase indicator badge with reactive status meter -->
+<div class="flex items-center gap-3">
+<div class="inline-flex items-center gap-2 bg-[#8F1018]/60 border border-[#FFF5E6]/20 px-3 py-1.5 rounded text-[10px] font-mono font-medium text-[#FFF5E6] backdrop-blur-sm shadow-inner">
+<span class="inline-block w-1.5 h-1.5 bg-[#FFD447] rounded-sm"></span>
+<span class="tracking-widest" id="phase-badge">PHASE 03 // THE TWIST</span>
+</div>
+<!-- Mini horizontal progress rail -->
+<div class="w-16 sm:w-24 h-1 bg-[#8F1018] rounded-full overflow-hidden border border-[#FFF5E6]/10">
+<div class="h-full bg-[#FFD447] w-3/5 transition-all duration-300" id="phase-progress-bar"></div>
+</div>
+</div>
+</div>
+<!-- Bottom Right: Interactive Navigation Cue -->
+<div class="flex flex-col items-end text-right gap-3" data-purpose="scroll-prompter">
+<div class="text-[10px] sm:text-xs font-mono tracking-widest-plus uppercase text-[#FFF5E6]/90 flex items-center gap-2">
+<span>SCROLL TO TRAVEL</span>
+<span class="text-[#FFD447] animate-bounce">↓</span>
+</div>
+<!-- Pulsating architectural baseline indicator -->
+<div class="w-20 sm:w-32 h-[2px] bg-gradient-to-r from-transparent via-[#FFD447] to-transparent indicator-pulse origin-center"></div>
+<span class="text-[8px] sm:text-[9px] font-mono tracking-widest text-[#FFF5E6]/40 uppercase hidden sm:block">
+          TAP / DRAG / TRACKPAD ENABLED
+        </span>
+</div>
+</footer>
+<!-- END: BottomBar -->
+</div>
+<!-- END: EditorialInterfaceOverlay -->
+<!-- BEGIN: WebGLShaderScript -->
+<!-- Compiles and animates the optical shader on full-viewport canvas with parallax -->
+<script data-purpose="webgl-pipeline">
+    const canvas = document.getElementById('gl-canvas');
+    const gl = canvas.getContext('webgl', { antialias: true, alpha: false, depth: false });
+
+    if (!gl) {
+      console.error('WebGL is not supported in this environment.');
+    }
+
+    // Vertex Shader: Fullscreen quad
+    const vertexShaderSource = `
+      attribute vec2 position;
+      void main() {
+        gl_Position = vec4(position, 0.0, 1.0);
+      }
+    `;
+
+    // Fragment Shader: AUTOSTRADA Op-Art Infinite Pasta Tunnel
+    const fragmentShaderSource = `
+      precision highp float;
+
+      uniform float u_time;
+      uniform vec2 u_resolution;
+      uniform vec2 u_mouse;
+
+      // Palette specification
+      #define BG_RED vec3(0.843, 0.098, 0.125)        // #D71920
+      #define BURGUNDY vec3(0.561, 0.063, 0.094)      // #8F1018
+      #define PASTA_YELLOW vec3(1.000, 0.831, 0.278)  // #FFD447
+      #define GOLDEN_YELLOW vec3(0.914, 0.675, 0.153) // #E9AC27
+      #define WARM_CREAM vec3(1.000, 0.961, 0.902)    // #FFF5E6
+
+      void main() {
+        vec2 st = (gl_FragCoord.xy - 0.5 * u_resolution.xy) / min(u_resolution.x, u_resolution.y);
+        
+        // Organic Parallax offset driven by smooth mouse coordinates
+        vec2 m = (u_mouse.xy / u_resolution.xy - 0.5) * 0.45;
+        st -= m * 0.35;
+
+        // Radius and polar angle
+        float r = length(st);
+        float a = atan(st.y, st.x);
+
+        // Virtual forward travel speed
+        float travel = u_time * 0.75;
+        
+        // Depth projection inside the tunnel
+        float z = 1.0 / max(r, 0.001);
+        float depthCoord = z + travel;
+
+        // Phase 2 Undulations: The Wave
+        float waveX = sin(depthCoord * 0.4) * 0.15 * min(1.0, depthCoord * 0.05);
+        float waveY = cos(depthCoord * 0.35 + 1.2) * 0.15 * min(1.0, depthCoord * 0.05);
+        vec2 center = vec2(waveX, waveY);
+        
+        vec2 p = st - center;
+        r = length(p);
+        a = atan(p.y, p.x);
+        z = 1.0 / max(r, 0.002);
+        depthCoord = z + travel;
+
+        // Phase 3 Twist: Axis rotation through space
+        float twist = sin(depthCoord * 0.15) * 2.8 + depthCoord * 0.25;
+        float twistedA = a + twist;
+
+        // Phase 4 Squeeze: Radial harmonic modulation
+        float squeeze = 1.0 + 0.32 * sin(depthCoord * 0.5 + cos(twistedA * 2.0));
+
+        // Phase 5 Chaos: Intertwined pasta ribbons
+        float ribbonOffset = sin(twistedA * 5.0 + depthCoord * 0.8) * 0.2;
+        
+        // High density geometric pasta strands
+        float strandFreq1 = 36.0;
+        float strandFreq2 = 72.0; 
+        
+        float strandPattern1 = cos(twistedA * strandFreq1 + ribbonOffset * 8.0);
+        float strandPattern2 = cos(twistedA * strandFreq2 - depthCoord * 3.0);
+        
+        // Concentric depth rings echoing the optical reference works
+        float ringPattern = sin(depthCoord * 4.0 * squeeze);
+        
+        float strandVal = abs(strandPattern1 * 0.65 + strandPattern2 * 0.35);
+        
+        // Sharp op-art ribbon mask
+        float lineWidth = 0.88;
+        float lineMask = smoothstep(lineWidth, 0.99, strandVal);
+        
+        float ringMask = smoothstep(0.75, 0.98, ringPattern);
+        
+        // Secondary delicate golden threads
+        float secondaryStrands = smoothstep(0.92, 0.99, abs(sin(twistedA * 54.0 + depthCoord * 1.5)));
+
+        // Optical depth fade and vanishing point
+        float depthFog = smoothstep(0.02, 0.45, r);
+        float centralVanish = smoothstep(0.0, 0.12, r);
+
+        // Background field gradient
+        vec3 col = BG_RED;
+        float tunnelVignette = smoothstep(0.01, 0.85, r);
+        col = mix(BURGUNDY, BG_RED, tunnelVignette);
+        col = mix(BURGUNDY * 0.7, col, centralVanish);
+
+        // Core pasta strand coloring
+        vec3 strandColor = mix(GOLDEN_YELLOW, PASTA_YELLOW, sin(depthCoord * 0.5) * 0.5 + 0.5);
+        
+        // Composite strands
+        float primaryAlpha = lineMask * depthFog * 0.95;
+        col = mix(col, strandColor, primaryAlpha);
+
+        // Secondary cream filaments
+        col = mix(col, WARM_CREAM, secondaryStrands * depthFog * 0.6);
+
+        // Optical grid intersection highlights
+        float nodeIntersection = lineMask * ringMask * depthFog;
+        col = mix(col, WARM_CREAM, nodeIntersection * 0.7);
+
+        // Screen boundary falloff
+        float screenEdge = smoothstep(0.9, 1.4, r);
+        col = mix(col, PASTA_YELLOW, screenEdge * lineMask * 0.3);
+
+        gl_FragColor = vec4(col, 1.0);
+      }
+    `;
+
+    function createShader(glCtx, type, source) {
+      const shader = glCtx.createShader(type);
+      glCtx.shaderSource(shader, source);
+      glCtx.compileShader(shader);
+      if (!glCtx.getShaderParameter(shader, glCtx.COMPILE_STATUS)) {
+        console.error(glCtx.getShaderInfoLog(shader));
+        glCtx.deleteShader(shader);
+        return null;
+      }
+      return shader;
+    }
+
+    const vertShader = createShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
+    const fragShader = createShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource);
+
+    const program = gl.createProgram();
+    gl.attachShader(program, vertShader);
+    gl.attachShader(program, fragShader);
+    gl.linkProgram(program);
+
+    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+      console.error(gl.getProgramInfoLog(program));
+    }
+
+    // Geometry: Fullscreen quad buffer
+    const positionBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+    gl.bufferData(
+      gl.ARRAY_BUFFER,
+      new Float32Array([
+        -1.0, -1.0,
+         1.0, -1.0,
+        -1.0,  1.0,
+        -1.0,  1.0,
+         1.0, -1.0,
+         1.0,  1.0
+      ]),
+      gl.STATIC_DRAW
+    );
+
+    const posAttrLoc = gl.getAttribLocation(program, 'position');
+    const timeUniLoc = gl.getUniformLocation(program, 'u_time');
+    const resUniLoc = gl.getUniformLocation(program, 'u_resolution');
+    const mouseUniLoc = gl.getUniformLocation(program, 'u_mouse');
+
+    // Resize management
+    function resizeCanvas() {
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+      
+      if (canvas.width !== width * dpr || canvas.height !== height * dpr) {
+        canvas.width = width * dpr;
+        canvas.height = height * dpr;
+      }
+      gl.viewport(0, 0, canvas.width, canvas.height);
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    // Interaction & Animation Loop State
+    let travelOffset = 42.85;
+    let targetTravelOffset = 42.85;
+    let mouseX = window.innerWidth * 0.5;
+    let mouseY = window.innerHeight * 0.5;
+    let targetMouseX = mouseX;
+    let targetMouseY = mouseY;
+    let lastTimestamp = performance.now();
+
+    // Mouse Tracking for Parallax
+    window.addEventListener('mousemove', (e) => {
+      targetMouseX = e.clientX;
+      targetMouseY = window.innerHeight - e.clientY; // Invert for GL coordinates
+    });
+
+    // Scroll listener for virtual forward distance travel
+    window.addEventListener('wheel', (e) => {
+      const delta = e.deltaY * 0.008;
+      targetTravelOffset += delta;
+      if (targetTravelOffset < 0) targetTravelOffset = 0;
+    }, { passive: true });
+
+    // Touch gesture support
+    let touchStartY = 0;
+    window.addEventListener('touchstart', (e) => {
+      touchStartY = e.touches[0].clientY;
+    }, { passive: true });
+    
+    window.addEventListener('touchmove', (e) => {
+      const currentY = e.touches[0].clientY;
+      const delta = (touchStartY - currentY) * 0.02;
+      touchStartY = currentY;
+      targetTravelOffset += delta;
+      if (targetTravelOffset < 0) targetTravelOffset = 0;
+    }, { passive: true });
+
+    // Phase definitions according to distance
+    const phases = [
+      { name: "PHASE 01 // ENTRANCE", maxKm: 25, progress: "20%" },
+      { name: "PHASE 02 // THE WAVE", maxKm: 40, progress: "40%" },
+      { name: "PHASE 03 // THE TWIST", maxKm: 65, progress: "60%" },
+      { name: "PHASE 04 // THE SQUEEZE", maxKm: 90, progress: "80%" },
+      { name: "PHASE 05 // THE CHAOS", maxKm: Infinity, progress: "100%" }
+    ];
+
+    const odometerEl = document.getElementById('odometer');
+    const phaseBadgeEl = document.getElementById('phase-badge');
+    const phaseProgressBarEl = document.getElementById('phase-progress-bar');
+    const curvatureEl = document.getElementById('curvature-readout');
+    const crosshairEl = document.getElementById('crosshair-wrapper');
+
+    function render(currentTime) {
+      const deltaSec = (currentTime - lastTimestamp) / 1000;
+      lastTimestamp = currentTime;
+
+      // Smooth interpolation for mouse parallax and travel distance
+      mouseX += (targetMouseX - mouseX) * 0.08;
+      mouseY += (targetMouseY - mouseY) * 0.08;
+      travelOffset += (targetTravelOffset - travelOffset) * 0.1;
+      
+      // Steady forward auto-drift
+      targetTravelOffset += deltaSec * 0.45;
+
+      // Update interactive HUD telemetry
+      const kmFormatted = travelOffset.toFixed(2).padStart(6, '0');
+      odometerEl.textContent = kmFormatted;
+
+      // Compute Active Phase
+      const activePhase = phases.find(p => travelOffset <= p.maxKm) || phases[phases.length - 1];
+      if (phaseBadgeEl.textContent !== activePhase.name) {
+        phaseBadgeEl.textContent = activePhase.name;
+        phaseProgressBarEl.style.width = activePhase.progress;
+      }
+
+      // Curvature radius modulation
+      const curRadius = (12.4 + Math.sin(travelOffset * 0.25) * 3.8).toFixed(2);
+      curvatureEl.textContent = `R: ${curRadius} RAD/S`;
+
+      // Parallax center crosshair shift
+      const tiltX = (mouseX / window.innerWidth - 0.5) * 45;
+      const tiltY = (-(mouseY / window.innerHeight - 0.5)) * 45;
+      crosshairEl.style.transform = `translate(${tiltX}px, ${tiltY}px)`;
+
+      // Render WebGL frame
+      gl.useProgram(program);
+      gl.enableVertexAttribArray(posAttrLoc);
+      gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+      gl.vertexAttribPointer(posAttrLoc, 2, gl.FLOAT, false, 0, 0);
+
+      gl.uniform1f(timeUniLoc, travelOffset);
+      gl.uniform2f(resUniLoc, canvas.width, canvas.height);
+      gl.uniform2f(mouseUniLoc, mouseX * (canvas.width / window.innerWidth), mouseY * (canvas.height / window.innerHeight));
+
+      gl.drawArrays(gl.TRIANGLES, 0, 6);
+
+      requestAnimationFrame(render);
+    }
+    requestAnimationFrame(render);
+  </script>
+<!-- END: WebGLShaderScript -->
+<!-- BEGIN: GenerativeWebAudioEngine -->
+<!-- Ambient harmonic drone synthesizer toggle using native Web Audio API -->
+<script data-purpose="generative-audio">
+    const soundButton = document.getElementById('sound-toggle');
+    const soundLabel = document.getElementById('sound-label');
+    let audioCtx = null;
+    let isPlaying = false;
+    let masterGain = null;
+    let osc1, osc2, osc3, filterNode;
+
+    function initAudio() {
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      audioCtx = new AudioContext();
+
+      masterGain = audioCtx.createGain();
+      masterGain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+
+      filterNode = audioCtx.createBiquadFilter();
+      filterNode.type = 'lowpass';
+      filterNode.frequency.setValueAtTime(260, audioCtx.currentTime);
+      filterNode.Q.setValueAtTime(4.0, audioCtx.currentTime);
+
+      // Low harmonic drone reminiscent of an Italian brutalist chamber
+      osc1 = audioCtx.createOscillator();
+      osc1.type = 'sawtooth';
+      osc1.frequency.setValueAtTime(55, audioCtx.currentTime); // A1 note
+
+      osc2 = audioCtx.createOscillator();
+      osc2.type = 'sine';
+      osc2.frequency.setValueAtTime(110, audioCtx.currentTime); // A2 octave
+
+      osc3 = audioCtx.createOscillator();
+      osc3.type = 'triangle';
+      osc3.frequency.setValueAtTime(82.41, audioCtx.currentTime); // E2 fifth
+
+      osc1.connect(filterNode);
+      osc2.connect(filterNode);
+      osc3.connect(filterNode);
+      filterNode.connect(masterGain);
+      masterGain.connect(audioCtx.destination);
+
+      osc1.start();
+      osc2.start();
+      osc3.start();
+    }
+
+    soundButton.addEventListener('click', () => {
+      if (!audioCtx) {
+        initAudio();
+      }
+
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+
+      if (!isPlaying) {
+        masterGain.gain.setTargetAtTime(0.08, audioCtx.currentTime, 0.1);
+        soundLabel.textContent = 'SOUND [LIVE]';
+        soundButton.classList.add('border-[#FFD447]', 'text-[#FFD447]');
+        isPlaying = true;
+      } else {
+        masterGain.gain.setTargetAtTime(0.0001, audioCtx.currentTime, 0.1);
+        soundLabel.textContent = 'SOUND [MUTED]';
+        soundButton.classList.remove('border-[#FFD447]', 'text-[#FFD447]');
+        isPlaying = false;
+      }
+    });
+  </script>
+<!-- END: GenerativeWebAudioEngine -->
+</body></html>
