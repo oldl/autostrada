@@ -6,3 +6,7 @@
 .journey{align-items:end}.plate-counter{display:flex;align-items:center;gap:10px}#plate{width:96px;height:96px;display:block;margin:-14px 0 -10px}#plate[hidden]{display:none}.plate-count{font-size:22px;letter-spacing:-.04em;font-variant-numeric:tabular-nums;margin-bottom:6px}@media(max-width:750px){#plate{width:72px;height:72px;margin:-10px 0 -8px}.plate-count{font-size:18px}}
 #plate{position:relative;inset:auto}
 #plate{width:96px;height:96px;margin:-28px -7px -14px}@media(max-width:750px){#plate{width:76px;height:76px;margin:-22px -6px -11px}}
+.intro p{font-size:16px;line-height:1.6}@media(max-width:750px){.intro p{font-size:14px}}
+.eyebrow,.coordinate,.vertical,.hint,.buttons button,.entry-index{font-size:12px}.edition,#sound,#audio-entry p{font-size:13px}.unit,.entry-options button{font-size:14px}#audio-entry small{font-size:11px}
+@media(max-width:750px){.intro .eyebrow,.eyebrow,.vertical,.hint,.buttons button,.edition{font-size:10px}#sound,#audio-entry p{font-size:10px}.eyebrow{letter-spacing:.08em}.hint{letter-spacing:.09em}}
+@media(max-width:400px){.hint,#sound{font-size:10px}}
